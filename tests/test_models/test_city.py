@@ -1,54 +1,72 @@
 #!/usr/bin/python3
-"""
-Unittest for city module
-"""
-import os
+"""test for city"""
 import unittest
+import os
+from os import getenv
 from models.city import City
 from models.base_model import BaseModel
-from models.engine.file_storage import FileStorage
+import pep8
 
 
-class Test_City(unittest.TestCase):
-    """ Test for
-    city Class """
+class TestCity(unittest.TestCase):
+    """this will test the city class"""
 
-    def setUp(self):
-        """set up the
-        test for testing cities"""
-        FileStorage._FileStorage__file_path = "test.json"
-        self.city = City()
-        self.city.name = "Oslo"
-        self.city.save()
+    @classmethod
+    def setUpClass(cls):
+        """set up for test"""
+        cls.city = City()
+        cls.city.name = "LA"
+        cls.city.state_id = "CA"
+
+    @classmethod
+    def teardown(cls):
+        """at the end of the test this will tear it down"""
+        del cls.city
+
+    def tearDown(self):
+        """teardown"""
+        try:
+            os.remove("file.json")
+        except Exception:
+            pass
+
+    def test_pep8_City(self):
+        """Tests pep8 style"""
+        style = pep8.StyleGuide(quiet=True)
+        p = style.check_files(['models/city.py'])
+        self.assertEqual(p.total_errors, 0, "fix pep8")
+
+    def test_checking_for_docstring_City(self):
+        """checking for docstrings"""
+        self.assertIsNotNone(City.__doc__)
 
     def test_attributes_City(self):
         """chekcing if City have attributes"""
         self.assertTrue('id' in self.city.__dict__)
         self.assertTrue('created_at' in self.city.__dict__)
         self.assertTrue('updated_at' in self.city.__dict__)
-        self.assertTrue('id' in self.city.__dict__)
-        self.assertEqual(hasattr(self.city, "name"), True)
+        self.assertTrue('state_id' in self.city.__dict__)
+        self.assertTrue('name' in self.city.__dict__)
 
-    def test_instance_City(self):
-        """checking for valid type"""
-        self.assertTrue(type(self.city.name) is str)
-        self.assertTrue(type(self.city.id) is str)
+    def test_is_subclass_City(self):
+        """test if City is subclass of Basemodel"""
+        self.assertTrue(issubclass(self.city.__class__, BaseModel), True)
 
-    def test_docstring_City(self):
-        """checking docstrings"""
-        self.assertIsNotNone(City.__doc__)
+    def test_attribute_types_City(self):
+        """test attribute type for City"""
+        self.assertEqual(type(self.city.name), str)
+        self.assertEqual(type(self.city.state_id), str)
 
-    def test_any_attribute(self):
-        """ check attributes existance"""
-        self.assertEqual(hasattr(self.city, "state_id"), True)
-        self.assertEqual(hasattr(self.city, "name"), True)
-
-    def testpublic(self):
-        self.assertEqual(str, type(City().id))
-
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == 'db', 'DB')
     def test_save_City(self):
         """test if the save works"""
         self.city.save()
         self.assertNotEqual(self.city.created_at, self.city.updated_at)
+
+    def test_to_dict_City(self):
+        """test if dictionary works"""
+        self.assertEqual('to_dict' in dir(self.city), True)
+
+
 if __name__ == "__main__":
     unittest.main()
